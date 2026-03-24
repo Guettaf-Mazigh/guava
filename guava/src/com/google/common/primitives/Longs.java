@@ -254,7 +254,7 @@ public final class Longs {
     for (long[] array : arrays) {
       length += array.length;
     }
-    long[] result = new long[checkNoOverflow(length)];
+    long[] result = new long[PrimitivesUtil.checkNoOverflow(length)];
     int pos = 0;
     for (long[] array : arrays) {
       System.arraycopy(array, 0, result, pos, array.length);
