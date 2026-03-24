@@ -663,6 +663,7 @@ public final class Ints extends IntsMethodsForWeb {
 
   private static final class IntArrayAsList extends AbstractList<Integer>
       implements RandomAccess, Serializable {
+        @GwtIncompatible @J2ktIncompatible private static final long serialVersionUID = 0;
     final int[] array;
     final int start;
     final int end;
@@ -791,7 +792,6 @@ public final class Ints extends IntsMethodsForWeb {
       return Arrays.copyOfRange(array, start, end);
     }
 
-    @GwtIncompatible @J2ktIncompatible private static final long serialVersionUID = 0;
   }
 
   /**
