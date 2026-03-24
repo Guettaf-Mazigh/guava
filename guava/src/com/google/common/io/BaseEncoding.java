@@ -433,6 +433,8 @@ public abstract class BaseEncoding {
   }
 
   static final class Alphabet {
+    private static final int HASH_MULTIPLIER_TRUE = 1231;   // convention Java pour true
+    private static final int HASH_MULTIPLIER_FALSE = 1237;  // convention Java pour false
     private final String name;
     // this is meant to be immutable -- don't modify it!
     private final char[] chars;
@@ -609,7 +611,7 @@ public abstract class BaseEncoding {
 
     @Override
     public int hashCode() {
-      return Arrays.hashCode(chars) + (ignoreCase ? 1231 : 1237);
+      return Arrays.hashCode(chars) + (ignoreCase ? HASH_MULTIPLIER_TRUE : HASH_MULTIPLIER_FALSE);
     }
   }
 
@@ -950,7 +952,11 @@ public abstract class BaseEncoding {
   }
 
   private static final class Base16Encoding extends StandardBaseEncoding {
-    final char[] encoding = new char[512];
+    private static final int BASE16_ALPHABET_SIZE = 16;
+    private static final int BYTE_VALUES_COUNT = 256;    // nb de valeurs possibles d'un byte (2^8)
+    private static final int BASE16_ENCODING_TABLE_SIZE = 512; // BYTE_VALUES_COUNT * 2
+    private static final int BASE16_HIGH_NIBBLE_OFFSET = 0x100; // décalage pour le second nibble
+    final char[] encoding = new char[BASE16_ENCODING_TABLE_SIZE];
 
     Base16Encoding(String name, String alphabetChars) {
       this(new Alphabet(name, alphabetChars.toCharArray()));
@@ -958,10 +964,10 @@ public abstract class BaseEncoding {
 
     private Base16Encoding(Alphabet alphabet) {
       super(alphabet, null);
-      checkArgument(alphabet.chars.length == 16);
-      for (int i = 0; i < 256; ++i) {
+      checkArgument(alphabet.chars.length == BASE16_ALPHABET_SIZE);
+      for (int i = 0; i < BYTE_VALUES_COUNT; ++i) {
         encoding[i] = alphabet.encode(i >>> 4);
-        encoding[i | 0x100] = alphabet.encode(i & 0xF);
+        encoding[i | BASE16_HIGH_NIBBLE_OFFSET] = alphabet.encode(i & 0xF);
       }
     }
 
@@ -972,7 +978,7 @@ public abstract class BaseEncoding {
       for (int i = 0; i < len; ++i) {
         int b = bytes[off + i] & 0xFF;
         target.append(encoding[b]);
-        target.append(encoding[b | 0x100]);
+        target.append(encoding[b | BASE16_HIGH_NIBBLE_OFFSET]);
       }
     }
 
@@ -997,13 +1003,17 @@ public abstract class BaseEncoding {
   }
 
   private static final class Base64Encoding extends StandardBaseEncoding {
+    private static final int BASE64_ALPHABET_SIZE = 64;
+    private static final int BASE64_BYTES_PER_CHUNK = 3;
+    private static final int BASE64_6BIT_MASK = 0x3F; // masque pour extraire 6 bits
+
     Base64Encoding(String name, String alphabetChars, @Nullable Character paddingChar) {
       this(new Alphabet(name, alphabetChars.toCharArray()), paddingChar);
     }
 
     private Base64Encoding(Alphabet alphabet, @Nullable Character paddingChar) {
       super(alphabet, paddingChar);
-      checkArgument(alphabet.chars.length == 64);
+      checkArgument(alphabet.chars.length == BASE64_ALPHABET_SIZE);
     }
 
     @Override
@@ -1011,12 +1021,12 @@ public abstract class BaseEncoding {
       checkNotNull(target);
       checkPositionIndexes(off, off + len, bytes.length);
       int i = off;
-      for (int remaining = len; remaining >= 3; remaining -= 3) {
+      for (int remaining = len; remaining >= BASE64_BYTES_PER_CHUNK; remaining -= BASE64_BYTES_PER_CHUNK) {
         int chunk = (bytes[i++] & 0xFF) << 16 | (bytes[i++] & 0xFF) << 8 | (bytes[i++] & 0xFF);
         target.append(alphabet.encode(chunk >>> 18));
-        target.append(alphabet.encode((chunk >>> 12) & 0x3F));
-        target.append(alphabet.encode((chunk >>> 6) & 0x3F));
-        target.append(alphabet.encode(chunk & 0x3F));
+        target.append(alphabet.encode((chunk >>> 12) & BASE64_6BIT_MASK));
+        target.append(alphabet.encode((chunk >>> 6) & BASE64_6BIT_MASK));
+        target.append(alphabet.encode(chunk & BASE64_6BIT_MASK));
       }
       if (i < off + len) {
         encodeChunkTo(target, bytes, i, off + len - i);
