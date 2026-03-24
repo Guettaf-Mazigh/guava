@@ -3142,8 +3142,7 @@ final class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<
       }
     }
 
-    @CanIgnoreReturnValue
-    boolean storeLoadedValue(
+    void storeLoadedValue(
         K key, int hash, LoadingValueReference<K, V> oldValueReference, V newValue) {
       lock();
       try {
@@ -3181,12 +3180,12 @@ final class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<
               setValue(e, key, newValue, now);
               this.count = newCount; // write-volatile
               evictEntries(e);
-              return true;
+              return;
             }
 
             // the loaded value was already clobbered
             enqueueNotification(key, hash, newValue, 0, RemovalCause.REPLACED);
-            return false;
+            return;
           }
         }
 
@@ -3196,7 +3195,7 @@ final class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<
         table.set(index, newEntry);
         this.count = newCount; // write-volatile
         evictEntries(newEntry);
-        return true;
+        return;
       } finally {
         unlock();
         postWriteCleanup();
