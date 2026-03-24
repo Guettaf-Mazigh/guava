@@ -299,7 +299,7 @@ public final class Ints extends IntsMethodsForWeb {
     for (int[] array : arrays) {
       length += array.length;
     }
-    int[] result = new int[checkNoOverflow(length)];
+    int[] result = new int[PrimitivesUtil.checkNoOverflow(length)];
     int pos = 0;
     for (int[] array : arrays) {
       System.arraycopy(array, 0, result, pos, array.length);
@@ -308,13 +308,6 @@ public final class Ints extends IntsMethodsForWeb {
     return result;
   }
 
-  private static int checkNoOverflow(long result) {
-    checkArgument(
-        result == (int) result,
-        "the total number of elements (%s) in the arrays must fit in an int",
-        result);
-    return (int) result;
-  }
 
   /**
    * Returns a big-endian representation of {@code value} in a 4-element byte array; equivalent to
