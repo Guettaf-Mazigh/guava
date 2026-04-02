@@ -1485,7 +1485,7 @@ final class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<
     }
 
     @Override
-    public ReferenceEntry<K, V> getEntry() {
+    public @Nullable ReferenceEntry<K, V> getEntry() {
       return entry;
     }
 
@@ -1530,7 +1530,7 @@ final class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<
     }
 
     @Override
-    public ReferenceEntry<K, V> getEntry() {
+    public @Nullable ReferenceEntry<K, V> getEntry() {
       return entry;
     }
 
@@ -1578,7 +1578,7 @@ final class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<
     }
 
     @Override
-    public ReferenceEntry<K, V> getEntry() {
+    public @Nullable ReferenceEntry<K, V> getEntry() {
       return null;
     }
 
@@ -3512,7 +3512,7 @@ final class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<
     }
 
     @Override
-    public ReferenceEntry<K, V> getEntry() {
+    public @Nullable ReferenceEntry<K, V> getEntry() {
       return null;
     }
 
