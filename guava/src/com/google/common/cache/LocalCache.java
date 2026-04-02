@@ -40,6 +40,7 @@ import com.google.common.cache.CacheBuilder.NullListener;
 import com.google.common.cache.CacheBuilder.OneWeigher;
 import com.google.common.cache.CacheLoader.InvalidCacheLoadException;
 import com.google.common.cache.CacheLoader.UnsupportedLoadingOperationException;
+import com.google.common.cache.LocalCache.LoadingValueReference;
 import com.google.common.collect.AbstractSequentialIterator;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -107,7 +108,7 @@ import org.jspecify.annotations.Nullable;
 })
 @GwtCompatible
 @NullUnmarked // TODO(cpovirk): Annotate for nullness.
-final class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<K, V> {
+final class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<K, V>, CacheBackend<K, V> {
 
   /*
    * The basic strategy is to subdivide the table among Segments, each of which itself is a
@@ -4831,7 +4832,7 @@ final class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<
   }
 
   static class LocalManualCache<K, V> implements Cache<K, V>, Serializable {
-    final LocalCache<K, V> localCache;
+    final CacheBackend<K, V> localCache;
 
     LocalManualCache(CacheBuilder<? super K, ? super V> builder) {
       this(new LocalCache<>(builder, null));
@@ -4905,8 +4906,10 @@ final class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<
     @Override
     public CacheStats stats() {
       SimpleStatsCounter aggregator = new SimpleStatsCounter();
-      aggregator.incrementBy(localCache.globalStatsCounter);
-      for (Segment<K, V> segment : localCache.segments) {
+      // Cast required to access internal fields of LocalCache
+      LocalCache<K, V> cache = (LocalCache<K, V>) localCache;
+      aggregator.incrementBy(cache.globalStatsCounter);
+      for (LocalCache.Segment<K, V> segment : cache.segments) {
         aggregator.incrementBy(segment.statsCounter);
       }
       return aggregator.snapshot();
@@ -4922,7 +4925,7 @@ final class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<
     @GwtIncompatible @J2ktIncompatible private static final long serialVersionUID = 1;
 
     Object writeReplace() {
-      return new ManualSerializationProxy<>(localCache);
+      return new ManualSerializationProxy<>((LocalCache<K, V>) localCache);
     }
 
     private void readObject(ObjectInputStream in) throws InvalidObjectException {
@@ -4977,7 +4980,7 @@ final class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<
 
     @Override
     Object writeReplace() {
-      return new LoadingSerializationProxy<>(localCache);
+      return new LoadingSerializationProxy<>((LocalCache<K, V>) localCache);
     }
 
     private void readObject(ObjectInputStream in) throws InvalidObjectException {
