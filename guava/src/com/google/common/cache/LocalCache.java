@@ -3918,7 +3918,7 @@ final class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<
 
   // Cache support
 
-  void cleanUp() {
+  public void cleanUp() {
     for (Segment<?, ?> segment : segments) {
       segment.cleanUp();
     }
@@ -3956,7 +3956,7 @@ final class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<
     return true;
   }
 
-  long longSize() {
+  public long longSize() {
     Segment<K, V>[] segments = this.segments;
     long sum = 0;
     for (Segment<K, V> segment : segments) {
@@ -3981,12 +3981,13 @@ final class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<
   }
 
   @CanIgnoreReturnValue // TODO(b/27479612): consider removing this
-  V get(K key, CacheLoader<? super K, V> loader) throws ExecutionException {
+  public V get(K key, CacheLoader<? super K, V> loader) throws ExecutionException {
     int hash = hash(checkNotNull(key));
     return segmentFor(hash).get(key, hash, loader);
   }
 
-  @Nullable V getIfPresent(Object key) {
+  @Nullable
+  public V getIfPresent(Object key) {
     int hash = hash(checkNotNull(key));
     V value = segmentFor(hash).get(key, hash);
     if (value == null) {
@@ -4003,11 +4004,11 @@ final class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<
     return (result != null) ? result : defaultValue;
   }
 
-  V getOrLoad(K key) throws ExecutionException {
+  public V getOrLoad(K key) throws ExecutionException {
     return get(key, defaultLoader);
   }
 
-  ImmutableMap<K, V> getAllPresent(Iterable<?> keys) {
+  public ImmutableMap<K, V> getAllPresent(Iterable<?> keys) {
     int hits = 0;
     int misses = 0;
 
@@ -4029,7 +4030,7 @@ final class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<
     return result.buildKeepingLast();
   }
 
-  ImmutableMap<K, V> getAll(Iterable<? extends K> keys) throws ExecutionException {
+  public ImmutableMap<K, V> getAll(Iterable<? extends K> keys) throws ExecutionException {
     int hits = 0;
     int misses = 0;
 
@@ -4150,7 +4151,7 @@ final class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<
     return segmentFor(hash).getEntry(key, hash);
   }
 
-  void refresh(K key) {
+  public void refresh(K key) {
     int hash = hash(checkNotNull(key));
     segmentFor(hash).refresh(key, hash, defaultLoader, false);
   }
@@ -4311,11 +4312,16 @@ final class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<
     }
   }
 
-  void invalidateAll(Iterable<?> keys) {
+  public void invalidateAll(Iterable<?> keys) {
     // TODO(fry): batch by segment
     for (Object key : keys) {
       remove(key);
     }
+  }
+
+  @Override
+  public ConcurrentMap<K, V> asMap() {
+    return this;
   }
 
   @LazyInit @RetainedWith @Nullable Set<K> keySet;
