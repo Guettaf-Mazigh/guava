@@ -4875,7 +4875,8 @@ final class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<
 
     @Override
     public void put(K key, V value) {
-      localCache.put(key, value);
+      @SuppressWarnings("unused")
+      V unused = localCache.put(key, value);
     }
 
     @Override
@@ -4886,7 +4887,8 @@ final class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<
     @Override
     public void invalidate(Object key) {
       checkNotNull(key);
-      localCache.remove(key);
+      @SuppressWarnings("unused")
+      V unused = localCache.remove(key);
     }
 
     @Override
@@ -4906,7 +4908,7 @@ final class LocalCache<K, V> extends AbstractMap<K, V> implements ConcurrentMap<
 
     @Override
     public ConcurrentMap<K, V> asMap() {
-      return localCache;
+      return (ConcurrentMap<K, V>) localCache;
     }
 
     @Override
