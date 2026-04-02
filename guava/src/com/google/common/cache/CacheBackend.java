@@ -15,33 +15,33 @@ import org.jspecify.annotations.Nullable;
  * <p>Package-private — not part of the public API.
  */
 @GwtCompatible
-interface CacheBackend<K, V> {
+public interface CacheBackend<K, V> {
 
-  @Nullable V getIfPresent(Object key);
+  public @Nullable V getIfPresent(Object key);
 
-  V get(K key, CacheLoader<? super K, V> loader) throws ExecutionException;
+  public V get(K key, CacheLoader<? super K, V> loader) throws ExecutionException;
 
-  @Nullable V put(K key, V value);
+  public @Nullable V put(K key, V value);
 
-  void putAll(Map<? extends K, ? extends V> m);
+  public void putAll(Map<? extends K, ? extends V> m);
 
-  @Nullable V remove(Object key);
+  public @Nullable V remove(Object key);
 
-  void clear();
+  public void clear();
 
-  long longSize();
+  public long longSize();
 
-  ConcurrentMap<K, V> asMap();
+  public ConcurrentMap<K, V> asMap();
 
-  void cleanUp();
+  public void cleanUp();
 
-  void invalidateAll(Iterable<?> keys);
+  public void invalidateAll(Iterable<?> keys);
 
-  ImmutableMap<K, V> getAllPresent(Iterable<?> keys);
+  public ImmutableMap<K, V> getAllPresent(Iterable<?> keys);
 
-  ImmutableMap<K, V> getAll(Iterable<? extends K> keys) throws ExecutionException;
+  public ImmutableMap<K, V> getAll(Iterable<? extends K> keys) throws ExecutionException;
 
-  V getOrLoad(K key) throws ExecutionException;
+  public V getOrLoad(K key) throws ExecutionException;
 
-  void refresh(K key);
+  public void refresh(K key);
 }
